@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <iostream>
 
 class DynamicArray {
 private:
@@ -26,8 +27,9 @@ public:
     bool empty();
 
     void insert(int value);
-    void insert(size_t index, int value);
+    void insert(int value, size_t index);
     int remove();
     int remove(size_t index);
 
+    friend std::ostream& operator<<(std::ostream& os, const DynamicArray& arr);
 };
