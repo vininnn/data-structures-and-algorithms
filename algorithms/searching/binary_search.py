@@ -1,6 +1,6 @@
-def binary_search(array, target):
-    lo = 0
-    hi = len(array) - 1
+def binary_search(array, target, lo=0, hi=None):
+    if hi is None:
+        hi = len(array) - 1
 
     while lo <= hi:
         mid = (hi + lo) // 2       
