@@ -10,7 +10,7 @@ DynamicArray::DynamicArray()
 }
 
 DynamicArray::DynamicArray(std::initializer_list<int> values)
-    : data(new int[values.size()]),
+    : data(values.size() == 0 ? nullptr : new int[values.size()]),
     size(values.size()),
     capacity(values.size())
 {
@@ -90,11 +90,12 @@ void DynamicArray::insert(int value, size_t index) {
         double_capacity();
     }
 
-    for (size_t i = size-1; i > index; i--) {
+    for (size_t i = size; i > index; i--) {
         data[i] = data[i-1];
     }
 
     data[index] = value;
+    size++;
 }
 
 int DynamicArray::remove() {
