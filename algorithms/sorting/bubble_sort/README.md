@@ -1,6 +1,6 @@
 # Bubble Sort
 
-A implementation of the Bubblesort algorithm.
+An implementation of the Bubble Sort algorithm.
 
 ## Features
 

@@ -1,7 +1,7 @@
 CXX := g++
 CXXFLAGS := -Wall -Wextra -std=c++17 -O2 -I../../../utils
 
-SRCS := $(wildcard *.cpp) ../../../utils/generators.cpp
+SRCS := $(wildcard *.cpp) $(wildcard ../../../utils/*.cpp)
 TARGET := main
 
 .PHONY: all build run clean

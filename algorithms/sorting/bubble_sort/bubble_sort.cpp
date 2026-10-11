@@ -1,12 +1,12 @@
 #include "bubble_sort.hpp"
 
-#include <iostream>
+// #include <iostream>
 
 void bubble_sort(std::vector<int>& arr){
-    int n = arr.size();
+    size_t n = arr.size();
     int temp;
 
-    for (int i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++){
         bool swapped = false;
 
         // for (int val : arr) {
@@ -14,7 +14,7 @@ void bubble_sort(std::vector<int>& arr){
         // }
         // std::cout << "\n";
 
-        for (int j = 0; j < n-1; j++){
+        for (size_t j = 0; j < n-1; j++){
             if (arr[j] > arr[j+1]){
                 swapped = true;
                 
