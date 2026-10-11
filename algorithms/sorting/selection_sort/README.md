@@ -19,7 +19,7 @@ Let $n$ be the number of elements in the collection.
 | Average Case  |             $O(n^2)$ |           $O(1)$ |
 | Worst Case    |             $O(n^2)$ |           $O(1)$ |
 
-* **Best, Average, and Worst Cases ($O(n^2)$):** Selection Sort always scans the remaining unsublist entirely to find the minimum element, regardless of whether the array is already sorted, reversed, or random.
+* **All Cases ($O(n^2)$):** Selection Sort always scans the remaining unsublist entirely to find the minimum element, regardless of whether the array is already sorted, reversed, or random.
 
 ---
 

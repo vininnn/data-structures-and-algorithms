@@ -41,12 +41,9 @@ Pass 2:
 [ 3 │ 5 │ 1 │ 8* ] -> Compare 5 & 1 -> Swap
 [ 3 │ 1 │ 5*│ 8* ] -> '5' is now in its final position
 
-.
-.
-.
-
-Until:
-[ 1* │ 3* │ 5* │ 8* ] -> Complete sorted
+Pass 3:
+[ 3 │ 1 │ 5*│ 8* ] -> Compare 3 & 1 -> Swap
+[ 1*│ 3*│ 5*│ 8* ] -> Completely sorted
 ```
 
 ---
