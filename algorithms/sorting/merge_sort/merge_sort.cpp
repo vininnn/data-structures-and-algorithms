@@ -42,7 +42,6 @@ static void merge(std::vector<int>& arr, size_t left, size_t middle, size_t righ
 
 void merge_sort(std::vector<int>& arr, size_t left, size_t right){
     if (left >= right) return;
-    
 
     size_t middle = left + (right - left) / 2;
 

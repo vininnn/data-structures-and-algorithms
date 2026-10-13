@@ -4,6 +4,7 @@
 
 void insertion_sort(std::vector<int>& arr){
     size_t n = arr.size();
+    
     for (size_t i = 1; i < n; i++){
         int j = i - 1;
         int key = arr[i];

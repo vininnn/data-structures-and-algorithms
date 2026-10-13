@@ -5,7 +5,6 @@
 
 void bubble_sort(std::vector<int>& arr){
     size_t n = arr.size();
-    int temp;
 
     for (size_t i = 0; i < n - 1; i++){
         bool swapped = false;
