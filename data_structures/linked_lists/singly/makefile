@@ -1,4 +1,3 @@
-
 CXX := g++
 CXXFLAGS := -Wall -Wextra -Wpedantic -std=c++17
 SANITIZER_FLAGS := -fsanitize=address,undefined -g -O1
