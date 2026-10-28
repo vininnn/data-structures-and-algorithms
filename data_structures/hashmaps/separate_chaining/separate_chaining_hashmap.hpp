@@ -26,9 +26,9 @@ public:
     void insert(int key, int value);
     bool remove(int key);
     bool replace(int key, int value);
-    bool contains_key(int key);
-    bool contains_value(int value);
-    int get(int key);
+    bool contains_key(int key) const;
+    bool contains_value(int value) const;
+    int get(int key) const;
 
     size_t get_size() const;
     bool empty() const;
