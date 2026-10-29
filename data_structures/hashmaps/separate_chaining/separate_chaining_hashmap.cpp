@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-explicit SeparateChainingHashMap::SeparateChainingHashMap(size_t capacity)
+SeparateChainingHashMap::SeparateChainingHashMap(size_t capacity)
     : buckets(nullptr),
     capacity(capacity),
     size(0)
@@ -16,6 +16,7 @@ explicit SeparateChainingHashMap::SeparateChainingHashMap(size_t capacity)
 
 SeparateChainingHashMap::~SeparateChainingHashMap() {
     clear();
+    delete[] buckets;
 }
 
 size_t SeparateChainingHashMap::hash(int value) const {
@@ -29,6 +30,7 @@ void SeparateChainingHashMap::insert(int key, int value) {
     while (current != nullptr) {
         if (current->key == key) {
             current->value = value;
+            return;
         }
 
         current = current->next;
@@ -41,25 +43,20 @@ void SeparateChainingHashMap::insert(int key, int value) {
 bool SeparateChainingHashMap::remove(int key) {
     size_t index = hash(key);
 
-    Node* current = buckets[index];
-    Node* toDelete = current;
-    while (current != nullptr) {
+    Node** link = &buckets[index];
+    while (*link != nullptr) {
+        Node* current = *link;
+
         if (current->key == key) {
-            if (current->next) {
-                current = current->next;
-            } else {
-                current->next = nullptr;
-            }
-            
-            delete toDelete;
-            size--;
+            *link = current->next;
+            delete current;
+            --size;
             return true;
         }
 
-        toDelete = current;
-        current = current->next;
+        link = &current->next;
     }
-    
+
     return false;
 }
 
