@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include <initializer_list>
-#include <iostream>
+#include <ostream>
 
 class DynamicArray {
 private:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <ostream>
 
 class SeparateChainingHashMap {
 private:
@@ -23,6 +24,8 @@ public:
     explicit SeparateChainingHashMap(size_t capacity = 16);
     ~SeparateChainingHashMap();
 
+    int& operator[](int key);
+
     void insert(int key, int value);
     bool remove(int key);
     bool replace(int key, int value);
@@ -33,4 +36,6 @@ public:
     size_t get_size() const;
     bool empty() const;
     void clear();
+
+    friend std::ostream& operator<<(std::ostream& os, const SeparateChainingHashMap& map);
 };

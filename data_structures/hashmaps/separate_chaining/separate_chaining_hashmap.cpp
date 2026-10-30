@@ -19,6 +19,25 @@ SeparateChainingHashMap::~SeparateChainingHashMap() {
     delete[] buckets;
 }
 
+int& SeparateChainingHashMap::operator[](int key) {
+    size_t index = hash(key);
+
+    Node* current = buckets[index];
+
+    while (current != nullptr) {
+        if (current->key == key) {
+            return current->value;
+        }
+
+        current = current->next;
+    }
+
+    buckets[index] = new Node(key, 0, buckets[index]);
+    ++size;
+
+    return buckets[index]->value;
+}
+
 size_t SeparateChainingHashMap::hash(int value) const {
     return value % capacity;
 }
@@ -142,4 +161,32 @@ void SeparateChainingHashMap::clear() {
     }
 
     size = 0;
+}
+
+std::ostream& operator<<(
+    std::ostream& os,
+    const SeparateChainingHashMap& map
+) {
+    os << "{";
+
+    bool first = true;
+
+    for (size_t i = 0; i < map.capacity; ++i) {
+        auto* current = map.buckets[i];
+
+        while (current != nullptr) {
+            if (!first) {
+                os << ", ";
+            }
+
+            os << current->key << ": " << current->value;
+
+            first = false;
+            current = current->next;
+        }
+    }
+
+    os << "}";
+
+    return os;
 }
