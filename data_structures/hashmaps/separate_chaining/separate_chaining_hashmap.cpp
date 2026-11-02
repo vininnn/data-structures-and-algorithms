@@ -5,7 +5,8 @@
 SeparateChainingHashMap::SeparateChainingHashMap(size_t capacity)
     : buckets(nullptr),
     capacity(capacity),
-    size(0)
+    size(0),
+    maxLoadFactor(0.75)
 {
     if (capacity == 0) {
         throw std::invalid_argument("SeparateChainingHashMap::SeparateChainingHashMap: invalid argument 'capacity'");
@@ -32,6 +33,11 @@ int& SeparateChainingHashMap::operator[](int key) {
         current = current->next;
     }
 
+    if (load_factor() >= maxLoadFactor) {
+        resize(capacity * 2);
+        index = hash(key);
+    }
+
     buckets[index] = new Node(key, 0, buckets[index]);
     ++size;
 
@@ -40,6 +46,31 @@ int& SeparateChainingHashMap::operator[](int key) {
 
 size_t SeparateChainingHashMap::hash(int value) const {
     return value % capacity;
+}
+
+void SeparateChainingHashMap::resize(size_t new_capacity) {
+    if (new_capacity <= 0) {
+        throw std::invalid_argument("SeparateChainingHashMap::resize: invalid argument 'new_capacity'");
+    }
+
+    Node** newBuckets = new Node*[new_capacity]{};
+
+    for (size_t i = 0; i < capacity; i++) {
+        Node* current = buckets[i];
+
+        while (current != nullptr) {
+            Node* next = current->next;
+
+            size_t newIndex = static_cast<size_t>(current->key) % new_capacity;
+            current->next = newBuckets[newIndex];
+            newBuckets[newIndex] = current;
+            current = next;
+        }
+    }
+
+    delete[] buckets;
+    buckets = newBuckets;
+    capacity = new_capacity;
 }
 
 void SeparateChainingHashMap::insert(int key, int value) {
@@ -53,6 +84,11 @@ void SeparateChainingHashMap::insert(int key, int value) {
         }
 
         current = current->next;
+    }
+
+    if (load_factor() >= maxLoadFactor) {
+        resize(capacity * 2);
+        index = hash(key);
     }
 
     buckets[index] = new Node(key, value, buckets[index]);
@@ -161,6 +197,26 @@ void SeparateChainingHashMap::clear() {
     }
 
     size = 0;
+}
+
+double SeparateChainingHashMap::load_factor() const {
+    return static_cast<double>(size) / capacity;
+}
+
+double SeparateChainingHashMap::max_load_factor() const {
+    return maxLoadFactor;
+}
+
+void SeparateChainingHashMap::max_load_factor(double value) {
+    if (value <= 0) {
+        throw std::invalid_argument("SeparateChainingHashMap::max_load_factor: invalid argument 'value'");
+    }
+
+    maxLoadFactor = value;
+
+    while (load_factor() > maxLoadFactor) {
+        resize(capacity * 2);
+    }
 }
 
 std::ostream& operator<<(
