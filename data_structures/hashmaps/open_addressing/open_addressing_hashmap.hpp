@@ -27,24 +27,46 @@ private:
     size_t hash(const Key& key) const {
         return hash_(key) % buckets.size();
     }
-
+    
     void resize(size_t new_capacity) {
+        
+    }
 
+    static size_t validate_capacity(size_t capacity) {
+        if (capacity == 0) {
+            throw std::invalid_argument("OpenAddressingHashMap::validate_capacity: invalid argument `capacity` can't be zero");
+        }
+
+        return capacity;
     }
 
 public:
-    explicit OpenAddressingHashMap(size_t capacity = 16) {
-
+    explicit OpenAddressingHashMap(size_t capacity = 16) 
+    : buckets(validate_capacity(capacity)),
+    num_occupied(0),
+    num_deleted(0),
+    maxLoadFactor(0.75)
+    {       
     }
 
     ~OpenAddressingHashMap() {
 
     }
 
-    Value& operator[](const Key& Key);
+    Value& operator[](const Key& Key) {
+
+    }
 
     void insert(const Key& key, const Value& value) {
-
+        size_t index = hash(key);
+        
+        if (buckets[index].state == State::Empty) {
+            buckets[index].key = key;
+            buckets[index].value = value;
+            buckets[index].state = State::Occupied;
+        } else {
+            // Sondagem
+        }
     }
 
     bool remove(const Key& key) {
