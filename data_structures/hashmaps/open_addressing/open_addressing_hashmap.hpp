@@ -29,7 +29,20 @@ private:
     }
     
     void resize(size_t new_capacity) {
-        
+        new_capacity = validate_capacity(new_capacity);
+
+        std::vector<Slot> new_buckets(new_capacity);
+
+        for (size_t i = 0; i < capacity; ++i) {
+            if (buckets[i].state == State::Occupied) {
+                new_buckets[i] = buckets[i];
+            } else if (buckets[i].state == State::Deleted) {
+                new_buckets[i].state = State::Deleted;
+            }
+        }
+
+        buckets = newBuckets;
+        capacity = new_capacity;
     }
 
     static size_t validate_capacity(size_t capacity) {
@@ -70,19 +83,44 @@ public:
     }
 
     bool remove(const Key& key) {
+        size_t index = hash(key);
 
+        // Sondagem
+        buckets[index].state == State::Deleted;
+        return true;
     }
 
     bool replace(const Key& key, const Value& value) {
+        size_t index = hash(key);
 
+        if (buckets[index].state == State::Occupied) {
+            buckets[index].key = key;
+            buckets[index].value = value;
+            
+            return true;
+        } else {
+            // Sondagem
+        }
+        
+        return false;
     }
     
     bool contains_key(const Key& key) const {
+        size_t index = hash(key);
 
+        //while (Sondagem) state != empty
+        if (buckets[index].key == key) return true;
+
+        return false;
     }
     
     bool contains_value(const Value& value) const {
+        size_t index = hash(key);
 
+        //while (Sondagem) state != empty
+        if (buckets[index].value == value) return true;
+
+        return false;
     }
     
     int get(const Key& key) const {
@@ -114,7 +152,28 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& os, const SeparateChainingHashMap& map) {
+        os << "{";
         
+        bool first = true;
+
+        // for (size_t i = 0; i < map.capacity; ++i) {
+        //     auto* current = map.buckets[i];
+
+        //     while (current != nullptr) {
+        //         if (!first) {
+        //             os << ", ";
+        //         }
+
+        //         os << current->key << ": " << current->value;
+
+        //         first = false;
+        //         current = current->next;
+        //     }
+        // }
+
+        os << "}";
+
+        return os; 
     }
 
 };
