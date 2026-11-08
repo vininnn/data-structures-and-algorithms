@@ -19,7 +19,7 @@ private:
         Key key;
         Value value;
         State state = State::Empty;
-    }
+    };
 
     static constexpr size_t npos = static_cast<size_t>(-1);
 
@@ -32,29 +32,34 @@ private:
     Hash hash_;
     KeyEqual equal_to_;
     
-    size_t hash(const Key& key) const {
-        return hash_(key) % buckets.size();
-    }
+    // size_t hash(const Key& key) const {
+    //     return hash_(key) % buckets.size();
+    // }
     
     bool needs_resize() const {
-        return (num_occupied + num_deleted + 1) >= static_cast<size_t>(buckets.size() * maxLoadFactor);
+        return (num_occupied + num_deleted + 1) > static_cast<size_t>(buckets.size() * maxLoadFactor);
     }
 
     void resize(size_t new_capacity) {
         new_capacity = validate_capacity(new_capacity);
 
         std::vector<Slot> new_buckets(new_capacity);
+        std::swap(buckets, new_buckets);
 
-        for (size_t i = 0; i < capacity; ++i) {
-            if (buckets[i].state == State::Occupied) {
-                new_buckets[i] = buckets[i];
-            } else if (buckets[i].state == State::Deleted) {
-                new_buckets[i].state = State::Deleted;
-            }
+        num_occupied = 0;
+        num_deleted = 0;
+
+        for (Slot& slot : new_buckets) {
+            if (slot.state != State::Occupied) continue;
+
+            bool found;
+            size_t index = find_slot(slot.key, found);
+            
+            buckets[index].key = std::move(slot.key);
+            buckets[index].value = std::move(slot.value);
+            buckets[index].state = State::Occupied;
+            num_occupied++;
         }
-
-        buckets = newBuckets;
-        capacity = new_capacity;
     }
 
     static size_t validate_capacity(size_t capacity) {
@@ -89,7 +94,7 @@ private:
 
             if (slot.state == State::Empty) {
                 found = false;
-                return probe_index;
+                return deleted != npos ? deleted : probe_index;
             }
 
             if (slot.state == State::Deleted) {
@@ -182,8 +187,8 @@ public:
     }
     
     bool contains_value(const Value& value) const {
-        for (size_t i = 0; i < capacity; ++i) {
-            if (buckets[i].state == State::Occupied && buckets[i].value == value) {
+        for (const Slot& slot : buckets) {
+            if (slot.state == State::Occupied && slot.value == value) {
                 return true;
             }
         }
@@ -191,7 +196,7 @@ public:
         return false;
     }
     
-    int get(const Key& key) const {
+    const Value& get(const Key& key) const {
         bool found;
         size_t index = find_slot(key, found);
         
