@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <stdexcept>
 #include <vector>
 
 #include "probing.hpp"
@@ -116,7 +117,12 @@ public:
     }
 
     Value& operator[](const Key& key) {
+        size_t index = find_index(key);
+        
+        if (index != npos) return buckets[index].value;
 
+        insert(key, Value());
+        return buckets[find_index(key)].value;
     }
 
     void insert(const Key& key, const Value& value) {
@@ -143,23 +149,26 @@ public:
     }
 
     bool remove(const Key& key) {
-        size_t index = hash_(key);
+        bool found;
+        size_t index = find_slot(key, found);
+        
+        if (found) {
+            buckets[index].state = State::Deleted;
+            num_occupied--;
+            num_deleted++;
+            return true;
+        }
 
-        // Sondagem
-        buckets[index].state == State::Deleted;
-        return true;
+        return false;
     }
 
     bool replace(const Key& key, const Value& value) {
-        size_t index = hash_(key);
-
-        if (buckets[index].state == State::Occupied) {
-            buckets[index].key = key;
+        bool found;
+        size_t index = find_slot(key, found);
+        
+        if (found) {
             buckets[index].value = value;
-            
             return true;
-        } else {
-            // Sondagem
         }
         
         return false;
@@ -202,11 +211,16 @@ public:
     }
     
     void clear() {
+        for (Slot& slot : buckets) {
+            slot.state = State::Empty;
+        }
 
+        num_occupied = 0;
+        num_deleted = 0;
     }
 
     double load_factor() const {
-
+        return static_cast<double>(num_occupied + num_deleted) / buckets.size();
     }
 
     double max_load_factor() const { 
@@ -244,3 +258,11 @@ public:
     }
 
 };
+
+template <typename K, typename V,
+    typename H = std::hash<K>, typename E = std::equal_to<K>>
+using LinearProbingHashMap = OpenAddressingHashMap<K, V, LinearProbing, H, E>;
+
+template <typename K, typename V,
+    typename H = std::hash<K>, typename E = std::equal_to<K>>
+using QuadraticProbingHashMap = OpenAddressingHashMap<K, V, QuadraticProbing, H, E>;
