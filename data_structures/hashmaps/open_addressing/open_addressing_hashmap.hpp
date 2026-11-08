@@ -103,7 +103,7 @@ private:
         }
 
         found = false;
-        return npos;
+        return deleted;
     }
 
 public:
@@ -115,24 +115,31 @@ public:
     {       
     }
 
-    ~OpenAddressingHashMap() {
-
-    }
-
     Value& operator[](const Key& key) {
 
     }
 
     void insert(const Key& key, const Value& value) {
-        size_t index = hash_(key);
+        bool found;
+        size_t index = find_slot(key, found);
         
-        if (buckets[index].state == State::Empty) {
-            buckets[index].key = key;
+        if (found) {
             buckets[index].value = value;
-            buckets[index].state = State::Occupied;
-        } else {
-            // Sondagem
+            return;
         }
+
+        if (index == npos || needs_resize()) {
+            resize(buckets.size() * 2);
+            index = find_slot(key, found);
+        }
+
+        Slot& slot = buckets[index];
+        if (slot.state == State::Deleted) --num_deleted;
+
+        slot.key = key;
+        slot.value = value;
+        slot.state = State::Occupied;
+        num_occupied++;
     }
 
     bool remove(const Key& key) {
@@ -159,25 +166,31 @@ public:
     }
     
     bool contains_key(const Key& key) const {
-        size_t index = hash_(key);
+        bool found;
+        find_slot(key, found);
 
-        //while (Sondagem) state != empty
-        if (buckets[index].key == key) return true;
-
-        return false;
+        return found;
     }
     
     bool contains_value(const Value& value) const {
-        size_t index = hash_(key);
-
-        //while (Sondagem) state != empty
-        if (buckets[index].value == value) return true;
+        for (size_t i = 0; i < capacity; ++i) {
+            if (buckets[i].state == State::Occupied && buckets[i].value == value) {
+                return true;
+            }
+        }
 
         return false;
     }
     
     int get(const Key& key) const {
+        bool found;
+        size_t index = find_slot(key, found);
+        
+        if (found) {
+            return buckets[index].value;
+        }
 
+        throw std::out_of_range("OpenAddressingHashMap::get: key not exists");
     }
 
     size_t get_size() const { 
@@ -201,32 +214,33 @@ public:
     }
     
     void max_load_factor(double value) { 
+        if (value <= 0.0 || value >= 1.0) {
+            throw std::invalid_argument("OpenAddressingHashMap::max_load_factor: invalid argument `value` must be in the range (0.0, 1.0)");
+        }
+        
         maxLoadFactor = value; 
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const SeparateChainingHashMap& map) {
+    friend std::ostream& operator<<(std::ostream& os, const OpenAddressingHashMap& map) {
         os << "{";
-        
+ 
         bool first = true;
-
-        // for (size_t i = 0; i < map.capacity; ++i) {
-        //     auto* current = map.buckets[i];
-
-        //     while (current != nullptr) {
-        //         if (!first) {
-        //             os << ", ";
-        //         }
-
-        //         os << current->key << ": " << current->value;
-
-        //         first = false;
-        //         current = current->next;
-        //     }
-        // }
-
+ 
+        for (const Slot& slot : map.buckets) {
+            if (slot.state != State::Occupied) continue;
+ 
+            if (!first) {
+                os << ", ";
+            }
+ 
+            os << slot.key << ": " << slot.value;
+ 
+            first = false;
+        }
+ 
         os << "}";
-
-        return os; 
+ 
+        return os;
     }
 
 };
