@@ -3,9 +3,13 @@
 #include <functional>
 #include <vector>
 
+#include "probing.hpp"
+
 template <typename Key, typename Value,
+    typename Probing = LinearProbing,
     typename Hash = std::hash<Key>, 
-    typename KeyEqual = std::equal_to<Key>>
+    typename KeyEqual = std::equal_to<Key>
+>
 class OpenAddressingHashMap {
 private:
     enum class State : unsigned char { Empty, Occupied, Deleted };
@@ -16,11 +20,14 @@ private:
         State state = State::Empty;
     }
 
+    static constexpr size_t npos = static_cast<size_t>(-1);
+
     std::vector<Slot> buckets;
     size_t num_occupied;
     size_t num_deleted;
     double maxLoadFactor;
 
+    Probing probing_;
     Hash hash_;
     KeyEqual equal_to_;
     
@@ -28,6 +35,10 @@ private:
         return hash_(key) % buckets.size();
     }
     
+    bool needs_resize() const {
+        return (num_occupied + num_deleted + 1) >= static_cast<size_t>(buckets.size() * maxLoadFactor);
+    }
+
     void resize(size_t new_capacity) {
         new_capacity = validate_capacity(new_capacity);
 
@@ -53,6 +64,48 @@ private:
         return capacity;
     }
 
+    size_t find_index(const Key& key) const {
+        const size_t index = hash_(key);
+
+        for (size_t attempt = 0; attempt < buckets.size(); ++attempt) {
+            size_t probe_index = probing_(index, attempt, buckets.size());
+            const Slot& slot = buckets[probe_index];
+
+            if (slot.state == State::Empty) return npos;
+            if (slot.state == State::Occupied && equal_to_(slot.key, key)) return probe_index;
+        }
+
+        return npos;
+    }
+
+    size_t find_slot(const Key& key, bool& found) const {
+        const size_t index = hash_(key);
+        size_t deleted = npos;
+
+        for (size_t attempt = 0; attempt < buckets.size(); ++attempt) {
+            size_t probe_index = probing_(index, attempt, buckets.size());
+            const Slot& slot = buckets[probe_index];
+
+            if (slot.state == State::Empty) {
+                found = false;
+                return probe_index;
+            }
+
+            if (slot.state == State::Deleted) {
+                if (deleted == npos) deleted = probe_index;
+                continue;
+            }
+
+            if (equal_to_(slot.key, key)) {
+                found = true;
+                return probe_index;
+            }
+        }
+
+        found = false;
+        return npos;
+    }
+
 public:
     explicit OpenAddressingHashMap(size_t capacity = 16) 
     : buckets(validate_capacity(capacity)),
@@ -66,12 +119,12 @@ public:
 
     }
 
-    Value& operator[](const Key& Key) {
+    Value& operator[](const Key& key) {
 
     }
 
     void insert(const Key& key, const Value& value) {
-        size_t index = hash(key);
+        size_t index = hash_(key);
         
         if (buckets[index].state == State::Empty) {
             buckets[index].key = key;
@@ -83,7 +136,7 @@ public:
     }
 
     bool remove(const Key& key) {
-        size_t index = hash(key);
+        size_t index = hash_(key);
 
         // Sondagem
         buckets[index].state == State::Deleted;
@@ -91,7 +144,7 @@ public:
     }
 
     bool replace(const Key& key, const Value& value) {
-        size_t index = hash(key);
+        size_t index = hash_(key);
 
         if (buckets[index].state == State::Occupied) {
             buckets[index].key = key;
@@ -106,7 +159,7 @@ public:
     }
     
     bool contains_key(const Key& key) const {
-        size_t index = hash(key);
+        size_t index = hash_(key);
 
         //while (Sondagem) state != empty
         if (buckets[index].key == key) return true;
@@ -115,7 +168,7 @@ public:
     }
     
     bool contains_value(const Value& value) const {
-        size_t index = hash(key);
+        size_t index = hash_(key);
 
         //while (Sondagem) state != empty
         if (buckets[index].value == value) return true;
