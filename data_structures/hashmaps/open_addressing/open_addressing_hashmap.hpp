@@ -3,6 +3,7 @@
 #include <functional>
 #include <stdexcept>
 #include <vector>
+#include <ostream>
 
 #include "probing.hpp"
 
